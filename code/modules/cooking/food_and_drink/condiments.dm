@@ -176,7 +176,8 @@ ABSTRACT_TYPE(/obj/item/reagent_containers/food/snacks/condiment)
 	c_flags = ONBELT
 	w_class = W_CLASS_SMALL
 	g_amt = 10
-	var/stuff = null
+	var/content = null
+	var/content_name = null
 	var/shakes = 0
 	var/myVerb = "shake"
 
@@ -185,13 +186,13 @@ ABSTRACT_TYPE(/obj/item/reagent_containers/food/snacks/condiment)
 			user.show_text("[src] is empty!", "red")
 			return
 		if (istype(A, /obj/item/reagent_containers/food))
-			A.reagents.add_reagent("[src.stuff]", 2)
+			A.reagents.add_reagent("[src.content]", 2)
 			src.shakes ++
-			user.show_text("You put some [src.stuff] onto [A].")
+			user.show_text("You put some [src.content_name] onto [A].")
 		else if (istype(A, /obj/item/reagent_containers/glass/beaker))
-			A.reagents.add_reagent("[src.stuff]", 5)
+			A.reagents.add_reagent("[src.content]", 5)
 			src.shakes += 5
-			user.show_text("You [src.myVerb] some [src.stuff] into [A]")
+			user.show_text("You [src.myVerb] some [src.content_name] into [A]")
 		else
 			return ..()
 
@@ -202,13 +203,13 @@ ABSTRACT_TYPE(/obj/item/reagent_containers/food/snacks/condiment)
 		if (ishuman(target))
 			var/mob/living/carbon/human/H = target
 			if ((H.head && H.head.c_flags & COVERSEYES) || (H.wear_mask && H.wear_mask.c_flags & COVERSEYES) || (H.glasses && H.glasses.c_flags & COVERSEYES))
-				H.tri_message(user, SPAN_ALERT("<b>[user]</b> uselessly [myVerb]s some [src.stuff] onto [H]'s headgear!"),\
-					SPAN_ALERT("[H == user ? "You uselessly [myVerb]" : "[user] uselessly [myVerb]s"] some [src.stuff] onto your headgear! Okay then."),\
-					SPAN_ALERT("You uselessly [myVerb] some [src.stuff] onto [user == H ? "your" : "[H]'s"] headgear![user == H ? " Okay then." : null]"))
+				H.tri_message(user, SPAN_ALERT("<b>[user]</b> uselessly [myVerb]s some [src.content_name] onto [H]'s headgear!"),\
+					SPAN_ALERT("[H == user ? "You uselessly [myVerb]" : "[user] uselessly [myVerb]s"] some [src.content_name] onto your headgear! Okay then."),\
+					SPAN_ALERT("You uselessly [myVerb] some [src.content_name] onto [user == H ? "your" : "[H]'s"] headgear![user == H ? " Okay then." : null]"))
 				src.shakes ++
 				return
 			else
-				switch (src.stuff)
+				switch (src.content)
 					if ("salt")
 						logTheThing(LOG_COMBAT, user, "uses [src] on [constructTarget(H, "combat")] at [log_loc(user)].")
 						H.tri_message(user, SPAN_ALERT("<b>[user]</b> [myVerb]s something into [H]'s eyes!"),\
@@ -231,12 +232,12 @@ ABSTRACT_TYPE(/obj/item/reagent_containers/food/snacks/condiment)
 									H.emote("sneeze")
 						return
 					else
-						H.tri_message(user, SPAN_ALERT("<b>[user]</b> [myVerb]s some [src.stuff] at [H]'s head!"),\
-							SPAN_ALERT("[H == user ? "You [myVerb]" : "[user] [myVerb]s"] some [src.stuff] at your head! Fuck!"),\
-							SPAN_ALERT("You [myVerb] some [src.stuff] at [user == H ? "your" : "[H]'s"] head![user == H ? " Fuck!" : null]"))
+						H.tri_message(user, SPAN_ALERT("<b>[user]</b> [myVerb]s some [src.content_name] at [H]'s head!"),\
+							SPAN_ALERT("[H == user ? "You [myVerb]" : "[user] [myVerb]s"] some [src.content_name] at your head! Fuck!"),\
+							SPAN_ALERT("You [myVerb] some [src.content_name] at [user == H ? "your" : "[H]'s"] head![user == H ? " Fuck!" : null]"))
 						src.shakes ++
 						return
-		else if (istype(target, /mob/living/critter/small_animal/slug) && src.stuff == "salt")
+		else if (istype(target, /mob/living/critter/small_animal/slug) && src.content == "salt")
 			target.visible_message(SPAN_ALERT("<b>[user]</b> [myVerb]s some salt onto [target] and it shrivels up!"),\
 			SPAN_ALERT("<b>OH GOD THE SALT [pick("IT BURNS","HOLY SHIT THAT HURTS","JESUS FUCK YOU'RE DYING")]![pick("","!","!!")]</b>"))
 			target.TakeDamage(null, 15, 15)
@@ -248,13 +249,13 @@ ABSTRACT_TYPE(/obj/item/reagent_containers/food/snacks/condiment)
 
 	attackby(obj/item/W, mob/user)
 		if (istype(W, /obj/item/reagent_containers/))
-			if (W.reagents.has_reagent("[src.stuff]") && W.reagents.get_reagent_amount("[src.stuff]") >= 15)
+			if (W.reagents.has_reagent("[src.content]") && W.reagents.get_reagent_amount("[src.content]") >= 15)
 				user.show_text("You refill [src].", "blue")
-				W.reagents.remove_reagent("[src.stuff]", 15)
+				W.reagents.remove_reagent("[src.content]", 15)
 				src.shakes = 0
 				return
 			else
-				user.show_text("There isn't enough [src.stuff] in here to refill [src]!", "red")
+				user.show_text("There isn't enough [src.content_name] in here to refill [src]!", "red")
 				return
 		else
 			return ..()
@@ -263,31 +264,36 @@ ABSTRACT_TYPE(/obj/item/reagent_containers/food/snacks/condiment)
 		name = "salt shaker"
 		desc = "A little bottle for shaking things onto other things. It has some salt in it."
 		icon_state = "shaker-salt"
-		stuff = "salt"
+		content = "salt"
+		content_name = "salt"
 
 	pepper
 		name = "pepper shaker"
 		desc = "A little bottle for shaking things onto other things. It has some pepper in it."
 		icon_state = "shaker-pepper"
-		stuff = "pepper"
+		content = "pepper"
+		content_name = "pepper"
 
 	ketchup
 		name = "ketchup bottle"
-		desc = "A little bottle for putting condiments on stuff. It has some ketchup in it."
+		desc = "A little bottle for putting condiments on content. It has some ketchup in it."
 		icon_state = "bottle-ketchup"
-		stuff = "ketchup"
+		content = "ketchup"
+		content_name = "ketchup"
 		myVerb = "squirt"
 
 	mustard
 		name = "mustard bottle"
-		desc = "A little bottle for putting condiments on stuff. It has some mustard in it."
+		desc = "A little bottle for putting condiments on content. It has some mustard in it."
 		icon_state = "bottle-mustard"
-		stuff = "mustard"
+		content = "mustard"
+		content_name = "mustard"
 		myVerb = "squirt"
 
 	barbecue
 		name = "barbecue sauce bottle"
-		desc = "A little bottle for putting condiments on stuff. It has some barbecue sauce in it."
+		desc = "A little bottle for putting condiments on content. It has some barbecue sauce in it."
 		icon_state = "bottle-barbecue"
-		stuff = "barbecue_sauce"
+		content = "barbecue_sauce"
+		content_name = "barbecue sauce"
 		myVerb = "squirt"
